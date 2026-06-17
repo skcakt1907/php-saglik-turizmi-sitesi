@@ -1,0 +1,8 @@
+# uploads/ — yalnızca medya dosyalarına izin, PHP execution kapalı
+<FilesMatch "\.(php|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Require all denied
+</FilesMatch>
+Options -ExecCGI -Indexes
+<IfModule mod_rewrite.c>
+    RewriteEngine Off
+</IfModule>

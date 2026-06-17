@@ -1,0 +1,78 @@
+# ============================================================
+#  Marmaris Health Center - Ana .htaccess
+#  Temiz URL'ler, dil yönlendirme, admin maskeleme, güvenlik
+# ============================================================
+
+Options -Indexes -MultiViews
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /marmaris-php/
+
+    # ----- Güvenlik: dotfiles ve hassas dosyalar -----
+    RewriteRule (^|/)\.(?!well-known)  - [F]
+    RewriteRule (^|/)(inc|lang)/        - [F]
+    RewriteRule \.(sql|md|log|ini|env|bak|swp|orig)$ - [F]
+
+    # ----- Admin URL (temiz) -----
+    # Dış URL: /admin/  →  fiziksel admin/ klasörü, uzantısız temiz URL'lerle
+    RewriteRule ^admin/?$                            admin/index.php   [L,QSA]
+    RewriteRule ^admin/(.+?)\.php$                   admin/$1.php      [L,QSA]
+    # /admin/dashboard  →  admin/dashboard.php  (uzantısız → .php)
+    RewriteRule ^admin/([a-zA-Z0-9\-_]+)/?$          admin/$1.php      [L,QSA]
+    # Statik vs (admin/img/x.png gibi)
+    RewriteRule ^admin/(.+)$                         admin/$1          [L,QSA]
+
+    # ----- Dil prefix yönlendirme -----
+    # /en/...  →  ?lang=en (cookie ile değil, URL ile çalışır)
+    # /de/...  →  ?lang=de
+    # / (prefix yok) → tr (varsayılan)
+
+    # Varsayılan dil İngilizce (önek yok). Türkçe /tr/, Almanca /de/.
+    # /tr  veya  /tr/  →  ana sayfa TR
+    RewriteRule ^tr/?$    index.php?lang=tr    [L,QSA]
+    RewriteRule ^de/?$    index.php?lang=de    [L,QSA]
+
+    # /tr/sayfa  veya /de/sayfa  →  sayfa.php?lang=xx
+    RewriteRule ^(tr|de)/([a-z0-9\-]+)/?$                        $2.php?lang=$1                          [L,QSA]
+    RewriteRule ^(tr|de)/([a-z0-9\-]+)/([a-z0-9\-]+)/?$          $2.php?lang=$1&slug=$3                  [L,QSA]
+
+    # ----- Türkçe (varsayılan) temiz URL'ler -----
+    # Mevcut dosya/klasör değilse rewrite et
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # /sayfa  →  sayfa.php
+    RewriteRule ^([a-z0-9\-]+)/?$                                 $1.php                                  [L,QSA]
+    # /kategori/slug  →  kategori.php?slug=xx   (örn: /saglik-hizmetleri/dis-tedavisi)
+    RewriteRule ^([a-z0-9\-]+)/([a-z0-9\-]+)/?$                   $1.php?slug=$2                          [L,QSA]
+
+    # .php uzantısı ile gelirse uzantısız hâle yönlendir (canonical)
+    RewriteCond %{THE_REQUEST} \s/+(?:marmaris-php/)?([^\s]+)\.php([\s?]) [NC]
+    RewriteRule ^ /marmaris-php/%1 [R=301,L]
+</IfModule>
+
+# ----- Genel güvenlik başlıkları -----
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# ----- Önbellek (statikler) -----
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png  "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType text/css   "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType font/woff2 "access plus 30 days"
+</IfModule>
+
+# Hata sayfaları (basit)
+ErrorDocument 404 /marmaris-php/404.php
+
+# UTF-8
+AddDefaultCharset UTF-8

@@ -1,0 +1,6 @@
+# admin/ — ek koruma katmanı
+# Direkt URL erişimi ana .htaccess'te zaten 404'lenir; bu da fallback.
+Options -Indexes
+<FilesMatch "\.(sql|md|log|ini|env|bak)$">
+    Require all denied
+</FilesMatch>
