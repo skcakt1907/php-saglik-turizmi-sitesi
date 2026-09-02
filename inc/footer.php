@@ -10,6 +10,34 @@
           <?php if (ayar('facebook')):  ?><a href="<?= e(ayar('facebook'))  ?>" target="_blank"><i class="bi bi-facebook"></i></a><?php endif; ?>
           <?php if (ayar('youtube')):   ?><a href="<?= e(ayar('youtube'))   ?>" target="_blank"><i class="bi bi-youtube"></i></a><?php endif; ?>
         </div>
+
+        <?php
+          // "Son güncelleme" = site dosyalarının en son değiştirildiği/yüklendiği tarih.
+          // Hem kök sayfalar hem inc/ altındaki parçalar taranır — aksi halde sadece
+          // footer/header güncellenince tarih eski kalıyordu.
+          $ushFiles = array_merge(
+              glob(__DIR__ . '/../*.php') ?: [],
+              glob(__DIR__ . '/*.php') ?: []
+          );
+          $ushTimes = array_filter(array_map('filemtime', $ushFiles));
+          $ushMtime = $ushTimes ? max($ushTimes) : time();
+        ?>
+        <div class="ushas-belge mt-4">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <img src="<?= SITE_URL ?>/img/ushas-logo.png" alt="USHAŞ"
+                 style="height:64px;width:auto;background:#fff;border-radius:8px;padding:6px;">
+            <a href="<?= SITE_URL ?>/img/ushas-belge.jpg" target="_blank" rel="noopener"
+               title="USHAŞ Uluslararası Sağlık Turizmi Yetki Belgesi — Belge No: AK-1397">
+              <img src="<?= SITE_URL ?>/img/ushas-belge.jpg"
+                   alt="USHAŞ Uluslararası Sağlık Turizmi Yetki Belgesi — Belge No: AK-1397"
+                   loading="lazy"
+                   style="height:64px;width:auto;background:#fff;border-radius:8px;padding:6px;box-shadow:0 2px 10px rgba(0,0,0,.15);">
+            </a>
+          </div>
+          <div class="small text-white-50 mt-2" style="line-height:1.6;">
+            USHAŞ Belge No: AK-1397 &nbsp;·&nbsp; Son güncelleme: <?= date('d.m.Y', $ushMtime) ?>
+          </div>
+        </div>
       </div>
       <div class="col-6 col-lg-2">
         <h6 class="fw-bold mb-3"><?= t('hizli_baglantilar') ?></h6>
